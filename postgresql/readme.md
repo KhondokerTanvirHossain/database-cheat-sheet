@@ -152,3 +152,51 @@ Delete all data:
 ```postgresql
 TRUNCATE TABLE schemaname.tablename;
 ```
+
+Size of data in a schema:
+
+```postgresql
+SELECT 
+    pg_size_pretty(sum(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::bigint) as size
+FROM 
+    pg_tables
+WHERE 
+    schemaname = 'your_schema_name';
+```
+
+Row counts of all the table under a schema:
+
+```postgresql
+SELECT 
+    table_name, 
+    (xpath('/row/cnt/text()', xml_count))[1]::text::int AS row_count
+FROM (
+    SELECT 
+        table_name, 
+        query_to_xml(format('SELECT COUNT(*) AS cnt FROM %I', table_name), false, true, '') AS xml_count
+    FROM 
+        information_schema.tables
+    WHERE 
+        table_schema = 'your_schema_name'
+) t;
+```
+
+Row counts of all the table with non zero row counts under a schema:
+
+```postgresql
+SELECT 
+    table_name, 
+    (xpath('/row/cnt/text()', xml_count))[1]::text::int AS row_count
+FROM (
+    SELECT 
+        table_name, 
+        query_to_xml(format('SELECT COUNT(*) AS cnt FROM %I', table_name), false, true, '') AS xml_count
+    FROM 
+        information_schema.tables
+    WHERE 
+        table_schema = 'your_schema_name'
+) t
+WHERE 
+    (xpath('/row/cnt/text()', xml_count))[1]::text::int > 0;
+```
+
