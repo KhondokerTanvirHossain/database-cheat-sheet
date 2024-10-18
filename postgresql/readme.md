@@ -46,6 +46,13 @@ List of user :
 \du
 ```
 
+
+List of schema :
+
+```bash
+\dn
+```
+
 Create a superuser `admin` with the password `admin` as below:
 
 ```postgresql
